@@ -9,7 +9,8 @@ bool bestFit = false;
 bool implicit = false;
 
 // Implicit free list
-int* impList = new int[1000];
+int impSize = 1000;
+int* impList = new int[impSize];
 
 // takes int value to indicate size of bytes to malloc
 // Returns index(?) of start of payload
@@ -37,11 +38,33 @@ void myfree(int pointer){
 
 // Grows size of simulated heap
 // End simulation of size passes 100,000 words
-void mysbrk(int size){
+int mysbrk(int size){
     if(implicit){
+        
+        // Check to see if new size will be larger than 100,000
+        if((impSize + size) > 100000){
+            std::cout << "Size of list has exceeded 100,000.\nSimulation will now halt." << std::endl;
+            return -1;
+        }
+
+        int *temp = new int[impSize + size];
+
+        for(int i = 0; i < impSize; i++){
+            temp[i] = impList[i];
+        }
+
+        delete impList;
+        impList = temp;
+        return impSize + size;
+    }
+
+    if(!implicit){
+
+
         
     }
     
+    return -1;
 }
 
 
@@ -112,12 +135,37 @@ int main(int argc, char* argv[]){
     size_t n = 0;
 
     while(getline(&lineptr, &n, inputFile) != -1){
-        outputFile << lineptr;
+
+        char* dup = strdup(lineptr);
+
+        // malloc case
+        if(dup[0] == 'a'){
+            std::cout << "malloc" << std::endl;
+            char* token = strsep(&dup, ",");
+            lineptr++;
+            token = strsep(&dup, ",");
+            std::cout << token << std::endl;
+        }
+
+        // free case
+        else if(dup[0] == 'f'){
+            std::cout << "free" << std::endl;
+        }
+
+        // realloc case
+        else if(dup[0] == 'r'){
+            std::cout << "realloc" << std::endl;
+        }
+
+        free(dup);      
+        
     }    
 
     // Cleanup
     fclose(inputFile);
     outputFile.close();
+    free(lineptr);
+    free(impList);
 
     return 0;
 }
