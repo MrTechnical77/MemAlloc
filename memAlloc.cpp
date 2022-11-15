@@ -1,15 +1,22 @@
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <string.h>
+#include <stdlib.h>
 
 // Global Variables
 bool bestFit = false;
 bool implicit = false;
 
+// Implicit free list
+int* impList = new int[1000];
+
 // takes int value to indicate size of bytes to malloc
 // Returns index(?) of start of payload
 int myalloc(int size){
+    int pointer = 0;
 
+    return pointer;
 }
 
 // Takes pointer to allocated block and size of new block
@@ -19,6 +26,8 @@ int myalloc(int size){
  // If called with size 0 = free
 int myrealloc(int pointer, int size){
 
+
+    return pointer;
 }
 
 // Frees allocated block
@@ -29,6 +38,9 @@ void myfree(int pointer){
 // Grows size of simulated heap
 // End simulation of size passes 100,000 words
 void mysbrk(int size){
+    if(implicit){
+        
+    }
     
 }
 
@@ -86,7 +98,8 @@ int main(int argc, char* argv[]){
     }
 
     FILE* inputFile = fopen(input.c_str(), "r");
-    FILE* outputFile = fopen("output.txt", "w");
+    std::ofstream outputFile;
+    outputFile.open("output.txt");
 
     // Check to make sure file was opened
     if(inputFile == NULL){
@@ -99,16 +112,12 @@ int main(int argc, char* argv[]){
     size_t n = 0;
 
     while(getline(&lineptr, &n, inputFile) != -1){
-        std::cout << lineptr;
-    }
-
-
-
-    
+        outputFile << lineptr;
+    }    
 
     // Cleanup
     fclose(inputFile);
-    fclose(outputFile);
+    outputFile.close();
 
     return 0;
 }

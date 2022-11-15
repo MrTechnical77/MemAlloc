@@ -6,7 +6,9 @@ all:
 
 clean:
 	rm $(output)
+	rm output.txt
 	rm *.o
+	
 
 test:
-	g++ -std=c99 -o $(output) $(input).cpp
+	g++ -o $(output) $(input).cpp
