@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <cstdint>
 #include <iomanip>
+#include <math.h>
 
 // Global Variables
 bool bestFit = false;
@@ -21,6 +22,10 @@ int myalloc(int size){
 
     // Implicit free list malloc
     if(implicit){
+
+        // Calculate size of payload
+        int words = round(size/4) * 2;
+        std::cout << words << std::endl;
 
         if(bestFit){
 
@@ -54,6 +59,9 @@ int myalloc(int size){
 // Frees old block
  // If called with size 0 = free
 int myrealloc(int pointer, int size){
+
+    // Calculate size of payload
+    int words = round(size/4) * 2;
 
     // Implicit free list realloc
     if(implicit){
@@ -109,6 +117,7 @@ int mysbrk(int size){
             return -1;
         }
 
+        impList[impSize - 1] = 0;
         int *temp = new int[size];
 
         for(int i = 0; i < impSize; i++){
@@ -118,6 +127,7 @@ int mysbrk(int size){
         delete impList;
         impList = temp;
         impSize = size;
+        impList[impSize - 1] = 1;
         return size;
     }
 
@@ -140,6 +150,9 @@ void printUseage(){
 int main(int argc, char* argv[]){
 
     std::string input;
+
+    impList[0] = 1;
+    impList[impSize - 1] = 1;
 
     // Print useage
     if(strcmp(argv[1], "-h") == 0){
@@ -221,14 +234,22 @@ int main(int argc, char* argv[]){
             int size = 0;
             int block = 0;
             int newBlock = 0;
+            int pointer = 0;
             sscanf(dup, "r, %d, %d, %d\n", &size, &block, &newBlock);
+
+            // Look up block to cross refrence
+            pointer = myalloc(size);
             myrealloc(block, size);
+            myfree(block);
+
+
         }
 
         free(dup);
         
     }    
 
+    mysbrk(1200);
 
     // Print data structure
     for(int i = 0; i < impSize; i++){
