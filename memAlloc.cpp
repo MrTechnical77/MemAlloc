@@ -146,8 +146,6 @@ int main(int argc, char* argv[]){
             int size = 0;
             int pointer = 0;
             sscanf(dup, "a, %d, %d\n", &size, &pointer);
-            std::cout << dup;
-            std::cout << "malloc: size: " << size << " pointer: " << pointer << std::endl << std::endl;
             myalloc(size);
         }
 
@@ -155,21 +153,19 @@ int main(int argc, char* argv[]){
         else if(dup[0] == 'f'){
             int pointer = 0;
             sscanf(dup, "f, %d\n", &pointer);
-            std::cout << dup;
-            std::cout << "free: pointer: " << pointer << std::endl << std::endl;
+            myfree(pointer);
         }
 
         // realloc case
-        else if(dup[0] == 'r'){            
+        else if(dup[0] == 'r'){
             int size = 0;
             int block = 0;
             int newBlock = 0;
             sscanf(dup, "r, %d, %d, %d\n", &size, &block, &newBlock);
-            std::cout << dup;
-            std::cout << "realloc: size: " << size << " block: " << block << " new block: " << newBlock << std::endl << std::endl;
+            myrealloc(block, size);
         }
 
-        free(dup);      
+        free(dup);
         
     }    
 
