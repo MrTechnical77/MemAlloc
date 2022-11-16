@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <string.h>
 #include <stdlib.h>
+#include <cstdint>
+#include <iomanip>
 
 // Global Variables
 bool bestFit = false;
@@ -47,7 +49,7 @@ int mysbrk(int size){
             return -1;
         }
 
-        int *temp = new int[impSize + size];
+        int *temp = new int[size];
 
         for(int i = 0; i < impSize; i++){
             temp[i] = impList[i];
@@ -55,7 +57,8 @@ int mysbrk(int size){
 
         delete impList;
         impList = temp;
-        return impSize + size;
+        impSize = size;
+        return size;
     }
 
     if(!implicit){
@@ -140,26 +143,46 @@ int main(int argc, char* argv[]){
 
         // malloc case
         if(dup[0] == 'a'){
-            std::cout << "malloc" << std::endl;
-            char* token = strsep(&dup, ",");
-            lineptr++;
-            token = strsep(&dup, ",");
-            std::cout << token << std::endl;
+            int size = 0;
+            int pointer = 0;
+            sscanf(dup, "a, %d, %d\n", &size, &pointer);
+            std::cout << dup;
+            std::cout << "malloc: size: " << size << " pointer: " << pointer << std::endl << std::endl;
+            myalloc(size);
         }
 
         // free case
         else if(dup[0] == 'f'){
-            std::cout << "free" << std::endl;
+            int pointer = 0;
+            sscanf(dup, "f, %d\n", &pointer);
+            std::cout << dup;
+            std::cout << "free: pointer: " << pointer << std::endl << std::endl;
         }
 
         // realloc case
-        else if(dup[0] == 'r'){
-            std::cout << "realloc" << std::endl;
+        else if(dup[0] == 'r'){            
+            int size = 0;
+            int block = 0;
+            int newBlock = 0;
+            sscanf(dup, "r, %d, %d, %d\n", &size, &block, &newBlock);
+            std::cout << dup;
+            std::cout << "realloc: size: " << size << " block: " << block << " new block: " << newBlock << std::endl << std::endl;
         }
 
         free(dup);      
         
     }    
+
+
+    // Print data structure
+    for(int i = 0; i < impSize; i++){
+        outputFile << std::dec << i << ", ";
+        if(impList[i] != 0) 
+            outputFile << "0x" << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << static_cast<int>(impList[i]) << std::endl;
+
+        else
+            outputFile << std::endl;
+    }
 
     // Cleanup
     fclose(inputFile);
