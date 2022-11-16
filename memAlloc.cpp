@@ -19,6 +19,32 @@ int* impList = new int[impSize];
 int myalloc(int size){
     int pointer = 0;
 
+    // Implicit free list malloc
+    if(implicit){
+
+        if(bestFit){
+
+        }
+
+        else {
+
+        }
+
+    }
+
+    // Explicit free list malloc
+    else {
+
+        if(bestFit){
+
+        }
+
+        else {
+
+        }
+
+    }
+
     return pointer;
 }
 
@@ -29,12 +55,46 @@ int myalloc(int size){
  // If called with size 0 = free
 int myrealloc(int pointer, int size){
 
+    // Implicit free list realloc
+    if(implicit){
+
+        if(bestFit){
+
+        }
+
+        else {
+
+        }
+
+    }
+
+    // Explicit free list realloc
+    else {
+
+        if(bestFit){
+
+        }
+
+        else {
+
+        }
+
+    }
+
 
     return pointer;
 }
 
 // Frees allocated block
 void myfree(int pointer){
+
+    if(implicit){
+
+    }
+
+    else {
+
+    }
 
 }
 
