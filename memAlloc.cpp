@@ -15,6 +15,10 @@ bool implicit = false;
 int impSize = 1000;
 int* impList = new int[impSize];
 
+// Array to store pointers
+int ptrsArr[1000];
+int blockAmt = 0;
+
 // takes int value to indicate size of bytes to malloc
 // Returns index(?) of start of payload
 int myalloc(int size){
@@ -24,16 +28,41 @@ int myalloc(int size){
     if(implicit){
 
         // Calculate size of payload
-        int words = round(size/4) * 2;
-        std::cout << words << std::endl;
+        int words = std::round(ceil(size * 0.25f) * 0.5f) * 2.0f;
+        
 
+        // Implicit Best Fit
         if(bestFit){
 
-        }
+        } // End Implicit Best Fit
 
+        // Implicit First Fit
         else {
+            int i = 1;
+            int temp = 0;
+            
+            // Find first open spot
+            while(impList[i] & 1){
+                i += ((impList[i] - 1) / 4);                
+            }
 
-        }
+            // Store old free size
+            temp = impList[i];
+
+            // Write header
+            impList[i] = 1 + (4 * (words + 2));
+
+            // Write footer
+            impList[i + words + 1] = 1+ (4 * (words + 2));
+
+            // Write new free size
+            impList[i + words + 2] = temp - (4 * (words + 2));
+            
+            
+            return i;
+
+
+        } // End implicit First Fit
 
     }
 
@@ -61,7 +90,7 @@ int myalloc(int size){
 int myrealloc(int pointer, int size){
 
     // Calculate size of payload
-    int words = round(size/4) * 2;
+    int words = std::round(ceil(size * 0.25f) * 0.5f) * 2.0f;
 
     // Implicit free list realloc
     if(implicit){
@@ -200,6 +229,9 @@ int main(int argc, char* argv[]){
     std::ofstream outputFile;
     outputFile.open("output.txt");
 
+    impList[1] = 998 * 4;
+    impList[impSize - 2] = 998 * 4;
+
     // Check to make sure file was opened
     if(inputFile == NULL){
         std::cout << "Error opening file, check your syntax" << std::endl;
@@ -219,7 +251,7 @@ int main(int argc, char* argv[]){
             int size = 0;
             int pointer = 0;
             sscanf(dup, "a, %d, %d\n", &size, &pointer);
-            myalloc(size);
+            ptrsArr[blockAmt] = myalloc(size);
         }
 
         // free case
@@ -241,15 +273,13 @@ int main(int argc, char* argv[]){
             pointer = myalloc(size);
             myrealloc(block, size);
             myfree(block);
-
-
         }
 
         free(dup);
         
     }    
 
-    mysbrk(1200);
+
 
     // Print data structure
     for(int i = 0; i < impSize; i++){
