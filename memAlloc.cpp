@@ -17,7 +17,6 @@ int* impList = new int[impSize];
 
 // Array to store pointers
 int ptrsArr[1000];
-int blockAmt = 0;
 
 // takes int value to indicate size of bytes to malloc
 // Returns index(?) of start of payload
@@ -42,8 +41,17 @@ int myalloc(int size){
             int temp = 0;
             
             // Find first open spot
-            while(impList[i] & 1){
-                i += ((impList[i] - 1) / 4);                
+            for(;;){
+                // Check to see if already allocated
+                if(impList[i] & 1){
+                    i +=((impList[i] - 1) / 4);
+                }
+                // If not allocated check if size is large enough
+                else if((impList[i] / 4) < words + 2){
+                    i +=((impList[i]) / 4);
+                }
+                else
+                    break;
             }
 
             // Store old free size
@@ -53,7 +61,7 @@ int myalloc(int size){
             impList[i] = 1 + (4 * (words + 2));
 
             // Write footer
-            impList[i + words + 1] = 1+ (4 * (words + 2));
+            impList[i + words + 1] = 1 + (4 * (words + 2));
 
             // Write new free size
             impList[i + words + 2] = temp - (4 * (words + 2));
@@ -96,6 +104,13 @@ int myrealloc(int pointer, int size){
     if(implicit){
 
         if(bestFit){
+            if(bestFit){
+
+            }
+
+            else{
+                
+            }
 
         }
 
@@ -125,11 +140,27 @@ int myrealloc(int pointer, int size){
 // Frees allocated block
 void myfree(int pointer){
 
+    // Implicit free
     if(implicit){
+        
+        // Free implicit best fit
+        if(bestFit){
+
+        }
+
+        // Free implicit first fit
+        else {
+            impList[ptrsArr[pointer]]--;
+            int size = impList[ptrsArr[pointer]] / 4;
+            impList[ptrsArr[pointer] + size - 1]--;
+            
+        }
 
     }
 
+    // Explicit free
     else {
+        
 
     }
 
@@ -251,7 +282,7 @@ int main(int argc, char* argv[]){
             int size = 0;
             int pointer = 0;
             sscanf(dup, "a, %d, %d\n", &size, &pointer);
-            ptrsArr[blockAmt] = myalloc(size);
+            ptrsArr[pointer] = myalloc(size);            
         }
 
         // free case
