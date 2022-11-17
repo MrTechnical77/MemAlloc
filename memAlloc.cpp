@@ -150,9 +150,31 @@ void myfree(int pointer){
 
         // Free implicit first fit
         else {
-            impList[ptrsArr[pointer]]--;
-            int size = impList[ptrsArr[pointer]] / 4;
-            impList[ptrsArr[pointer] + size - 1]--;
+
+            int headerIndex = ptrsArr[pointer];
+            int size = impList[headerIndex] / 4;
+            int footerIndex = ptrsArr[pointer] + size - 1;
+
+            // Update header
+            impList[headerIndex]--;
+
+            // Update Footer
+            impList[footerIndex]--;
+
+            // Coalecse
+
+            // Above
+            while(impList[headerIndex - 1] % 16 == 0){
+                int newSize = impList[headerIndex] + impList[headerIndex - 1];
+                impList[headerIndex - (impList[headerIndex - 1] / 4)] = newSize;
+                impList[footerIndex] = newSize;
+                int newHeaderIndex = headerIndex - (impList[headerIndex - 1] / 4);
+                impList[headerIndex] = 0;
+                impList[headerIndex - 1] = 0;
+                headerIndex = newHeaderIndex;
+            }
+
+            // Below
             
         }
 
