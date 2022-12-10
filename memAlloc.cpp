@@ -17,6 +17,7 @@ int* impList = new int[impSize];
 
 // Array to store pointers
 int ptrsArr[1000];
+int blockAmt = 0;
 
 // takes int value to indicate size of bytes to malloc
 // Returns index(?) of start of payload
@@ -65,6 +66,10 @@ int myalloc(int size){
 
             // Write new free size
             impList[i + words + 2] = temp - (4 * (words + 2));
+
+            // Write new list footer
+            int impListFooterIndex = impSize - 2;
+            impList[impListFooterIndex] = impList[i + words + 2];
             
             
             return i;
@@ -104,13 +109,6 @@ int myrealloc(int pointer, int size){
     if(implicit){
 
         if(bestFit){
-            if(bestFit){
-
-            }
-
-            else{
-                
-            }
 
         }
 
@@ -162,10 +160,11 @@ void myfree(int pointer){
             impList[footerIndex]--;
 
             // Coalecse
+            int newSize = 0;
 
             // Above
-            while(impList[headerIndex - 1] % 16 == 0){
-                int newSize = impList[headerIndex] + impList[headerIndex - 1];
+            if(impList[headerIndex - 1] % 4 == 0){
+                newSize = impList[headerIndex] + impList[headerIndex - 1];
                 impList[headerIndex - (impList[headerIndex - 1] / 4)] = newSize;
                 impList[footerIndex] = newSize;
                 int newHeaderIndex = headerIndex - (impList[headerIndex - 1] / 4);
@@ -175,6 +174,12 @@ void myfree(int pointer){
             }
 
             // Below
+            if(impList[footerIndex + 1] % 4 == 0){
+                newSize += impList[footerIndex] + impList[footerIndex + 1];
+                impList[footerIndex + (impList[footerIndex + 1] / 4)] = newSize;
+                impList[headerIndex] = newSize;
+                
+            }
             
         }
 
@@ -304,7 +309,7 @@ int main(int argc, char* argv[]){
             int size = 0;
             int pointer = 0;
             sscanf(dup, "a, %d, %d\n", &size, &pointer);
-            ptrsArr[pointer] = myalloc(size);            
+            ptrsArr[pointer] = myalloc(size);
         }
 
         // free case
