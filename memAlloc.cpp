@@ -34,6 +34,8 @@ int myalloc(int size){
         // Implicit Best Fit
         if(bestFit){
 
+            int possiblePos[impSize];
+
         } // End Implicit Best Fit
 
         // Implicit First Fit
@@ -142,16 +144,16 @@ void myfree(int pointer){
     if(implicit){
         
         // Free implicit best fit
-        if(bestFit){
-
-        }
+        
 
         // Free implicit first fit
-        else {
+        if(true) {
 
             int headerIndex = ptrsArr[pointer];
             int size = impList[headerIndex] / 4;
             int footerIndex = ptrsArr[pointer] + size - 1;
+
+            std::cout << "Header: " << headerIndex << "\nFooter: " << footerIndex << std::endl;
 
             // Update header
             impList[headerIndex]--;
@@ -163,21 +165,30 @@ void myfree(int pointer){
             int newSize = 0;
 
             // Above
-            if(impList[headerIndex - 1] % 4 == 0){
-                newSize = impList[headerIndex] + impList[headerIndex - 1];
-                impList[headerIndex - (impList[headerIndex - 1] / 4)] = newSize;
+            if(impList[headerIndex - 1] % 2 == 0){
+                newSize += impList[headerIndex] + impList[headerIndex - 1];
                 impList[footerIndex] = newSize;
-                int newHeaderIndex = headerIndex - (impList[headerIndex - 1] / 4);
+
+                int replacedIndex = headerIndex - (impList[headerIndex - 1] / 4);
+                impList[replacedIndex] = newSize;
+
                 impList[headerIndex] = 0;
                 impList[headerIndex - 1] = 0;
-                headerIndex = newHeaderIndex;
+
+                headerIndex = replacedIndex;
+                size = newSize;                
             }
 
             // Below
-            if(impList[footerIndex + 1] % 4 == 0){
-                newSize += impList[footerIndex] + impList[footerIndex + 1];
-                impList[footerIndex + (impList[footerIndex + 1] / 4)] = newSize;
-                impList[headerIndex] = newSize;
+            if(impList[footerIndex + 1] % 2 == 0){    
+                
+                impList[headerIndex] = size + impList[footerIndex + 1];
+
+                int newFooterIndex = footerIndex + (impList[footerIndex + 1] / 4);
+                impList[newFooterIndex] = size + impList[footerIndex + 1];
+
+                impList[footerIndex] = 0;
+                impList[footerIndex + 1] = 0;              
                 
             }
             
