@@ -39,15 +39,25 @@ int myalloc(int size){
             int lowestIndex = 0;
 
             // Create list of possible locions to store malloc
-            int i = 1;
-            while(i < impSize){
-                if(impList[i] % 2 == 0){
-                    if((impList[i] / 4) > (words + 2) && impList[i] < lowest && impList[i] != 0){
-                        lowest = impList[i];
-                        lowestIndex = i;
-                    }
+            int j = 1;
+            while(j < impSize - 1){
+                if(impList[j] % 2 == 1){
+                    j += ((impList[j] - 1) / 4);
+                    std::cout << "index: " << j << std::endl;
                 }
-                i++;
+                else if (impList[j] % 2 == 0){
+
+                    if(impList[j] < lowest){
+                        if(impList[j] >= size){
+                            lowest = impList[j];
+                            lowestIndex = j;
+                        }
+                    }
+
+
+                    j += (impList[j] / 4);
+                    std::cout << "Index: " << j << std::endl;
+                }
             }
 
             // Store old free size
@@ -59,12 +69,18 @@ int myalloc(int size){
             // Write footer
             impList[lowestIndex + words + 1] = 1 + (4 * (words + 2));
 
-            // Write new free size
-            impList[lowestIndex + words + 2] = temp - (4 * (words + 2));
+            // Write new free size header
+            int freedHeadIndex = lowestIndex + words + 2;
 
-            // Write new list footer
-            int impListFooterIndex = impSize - 2;
-            impList[impListFooterIndex] = impList[lowestIndex + words + 2];
+            int newFreeSize = temp - (4 * (words + 2));
+
+            impList[freedHeadIndex] = newFreeSize;
+            //std::cout << freedHeadIndex << std::endl;
+
+            // Write new freed footer
+            int freedFootIndex = freedHeadIndex + (newFreeSize / 4) - 1;
+            //std::cout << "Footer: " << freedFootIndex << std::endl;
+            impList[freedFootIndex] = newFreeSize;
             
             
             return lowestIndex;
@@ -113,9 +129,6 @@ int myalloc(int size){
             //std::cout << "Footer: " << freedFootIndex << std::endl;
             impList[freedFootIndex] = newFreeSize;
             
-            
-            
-            
             return i;
 
 
@@ -157,8 +170,6 @@ void myfree(int pointer){
             if(impList[headerIndex] % 2 == 0){
                 return;
             }
-
-            std::cout << "Header: " << headerIndex << "\nFooter: " << footerIndex << std::endl;
 
             // If coalesce above and below
             if(impList[headerIndex - 1] % 2 == 0 && impList[footerIndex + 1] % 2 == 0){
@@ -274,7 +285,7 @@ int mysbrk(int size){
         // Check to see if new size will be larger than 100,000
         if((impSize + size) > 100000){
             std::cout << "Size of list has exceeded 100,000.\nSimulation will now halt." << std::endl;
-            return -1;
+            exit(1);
         }
 
         impList[impSize - 1] = 0;
