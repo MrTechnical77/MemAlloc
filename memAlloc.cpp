@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <math.h>
+#include <limits.h>
 
 // Global Variables
 bool bestFit = false;
@@ -34,7 +35,40 @@ int myalloc(int size){
         // Implicit Best Fit
         if(bestFit){
 
-            int possiblePos[impSize];
+            int lowest = INT_MAX;
+            int lowestIndex = 0;
+
+            // Create list of possible locions to store malloc
+            int i = 1;
+            while(i < impSize){
+                if(impList[i] % 2 == 0){
+                    if((impList[i] / 4) > (words + 2) && impList[i] < lowest && impList[i] != 0){
+                        lowest = impList[i];
+                        lowestIndex = i;
+                    }
+                }
+                i++;
+            }
+
+            // Store old free size
+            int temp = impList[lowestIndex];
+
+            // Write header
+            impList[lowestIndex] = 1 + (4 * (words + 2));
+
+            // Write footer
+            impList[lowestIndex + words + 1] = 1 + (4 * (words + 2));
+
+            // Write new free size
+            impList[lowestIndex + words + 2] = temp - (4 * (words + 2));
+
+            // Write new list footer
+            int impListFooterIndex = impSize - 2;
+            impList[impListFooterIndex] = impList[lowestIndex + words + 2];
+            
+            
+            return lowestIndex;
+
 
         } // End Implicit Best Fit
 
@@ -324,14 +358,14 @@ int main(int argc, char* argv[]){
         }
 
         // free case
-        else if(dup[0] == 'f'){
+        if(dup[0] == 'f'){
             int pointer = 0;
             sscanf(dup, "f, %d\n", &pointer);
             myfree(pointer);
         }
 
         // realloc case
-        else if(dup[0] == 'r'){
+        if(dup[0] == 'r'){
             int size = 0;
             int block = 0;
             int newBlock = 0;
@@ -339,7 +373,7 @@ int main(int argc, char* argv[]){
             sscanf(dup, "r, %d, %d, %d\n", &size, &block, &newBlock);
 
             // Look up block to cross refrence
-            pointer = myalloc(size);
+            ptrsArr[newBlock] = myalloc(size);
             myrealloc(block, size);
             myfree(block);
         }
