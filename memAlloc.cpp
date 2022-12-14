@@ -309,7 +309,22 @@ void myfree(int pointer){
                 int newFooterindex = footerIndex + (impList[footerIndex + 1] / 4);
 
                 impList[newHeaderIndex] = newSize;
-                impList[newFooterindex] = newSize;                
+                impList[newFooterindex] = newSize;         
+
+                int index = newFooterindex + 1;
+
+                for(;;){
+                    if(index > impSize - 2)
+                        break;
+
+                    if(impList[index] % 2 == 0){
+                        impList[index + 1] = newHeaderIndex;
+                        break;
+                    }
+                    else{
+                        index += (impList[index] - 1) / 4;
+                    }
+                }
 
                 return;
             }
