@@ -25,12 +25,11 @@ int blockAmt = 0;
 int myalloc(int size){
     int pointer = 0;
 
-    // Implicit free list malloc
-    if(implicit){
+    // Calculate size of payload
+    int words = std::round(ceil(size * 0.25f) * 0.5f) * 2.0f;
 
-        // Calculate size of payload
-        int words = std::round(ceil(size * 0.25f) * 0.5f) * 2.0f;
-        
+    // Implicit free list malloc
+    if(implicit){   
 
         // Implicit Best Fit
         if(bestFit){
@@ -139,11 +138,62 @@ int myalloc(int size){
     // Explicit free list malloc
     else {
 
+        // Best Fit Explicit
         if(bestFit){
 
         }
 
+        // First Fit Explicit
         else {
+
+            int i = 1;
+            int temp = 0;
+            
+            // Find first open spot
+            for(;;){
+                // Check to see if already allocated
+                if(impList[i] & 1){
+                    i +=((impList[i] - 1) / 4);
+                }
+                // If not allocated check if size is large enough
+                else if((impList[i] / 4) < words + 2){
+                    i +=((impList[i]) / 4);
+                }
+                else
+                    break;
+            }
+
+            // Store old free size
+            temp = impList[i];
+
+            // Write header
+            impList[i] = 1 + (4 * (words + 2));
+
+            // Only write new pointer if there isn't one there
+            if(impList[i + 1] == 0)
+                impList[i + 1] = -1;
+
+            if(impList[i + 2] == 0)
+                impList[i + 2] = -1;
+
+            // Write footer
+            impList[i + words + 1] = 1 + (4 * (words + 2));
+
+            // Write new free size header
+            int freedHeadIndex = i + words + 2;
+
+            int newFreeSize = temp - (4 * (words + 2));
+
+            impList[freedHeadIndex] = newFreeSize;
+            impList[freedHeadIndex + 1] = -1;
+            impList[freedHeadIndex + 2] = -1;
+
+            // Write new freed footer
+            int freedFootIndex = freedHeadIndex + (newFreeSize / 4) - 1;
+
+            impList[freedFootIndex] = newFreeSize;
+            
+            return i;
 
         }
 
@@ -221,15 +271,92 @@ void myfree(int pointer){
                 impList[footerIndex]--;
             }
             
-        }
+        } // End implicit free
 
     }
 
     // Explicit free
     else {
-        
+            int headerIndex = ptrsArr[pointer];
+            int size = (impList[headerIndex] - 1) / 4;
+            int footerIndex = ptrsArr[pointer] + size - 1;
+            bool cAbove = false;
+            bool cBelow = false;
 
-    }
+            // Check if already freed
+            if(impList[headerIndex] % 2 == 0){
+                return;
+            }
+
+            // If coalesce above and below
+            if(impList[headerIndex - 1] % 2 == 0 && impList[footerIndex + 1] % 2 == 0){
+                int newSize = (impList[headerIndex] - 1) + impList[headerIndex - 1] + impList[footerIndex + 1];
+
+                int newHeaderIndex = headerIndex - (impList[headerIndex - 1] / 4);
+                int newFooterindex = footerIndex + (impList[footerIndex + 1] / 4);
+
+                impList[newHeaderIndex] = newSize;
+                impList[newFooterindex] = newSize;
+
+                return;
+            }
+
+            // Check for lower address coalesce
+            if(impList[headerIndex - 1] % 2 == 0){
+                cAbove = true;
+                int newSize = (impList[headerIndex] - 1) + impList[headerIndex - 1];
+                if(newSize % 2 != 0){
+                    newSize++;
+                }
+
+                int newHeaderIndex = headerIndex - (impList[headerIndex - 1] / 4);
+                
+                impList[newHeaderIndex] = newSize;
+                headerIndex = newHeaderIndex;
+                impList[footerIndex] = newSize;
+            }
+
+            // Check for higher address coalesce
+            if(impList[footerIndex + 1] % 2 == 0){
+                cBelow = true;
+                int newSize = (impList[footerIndex] - 1) + impList[footerIndex + 1];
+                if(newSize % 2 != 0){
+                    newSize++;
+                }
+
+                int newFooterIndex = footerIndex + (impList[footerIndex + 1] / 4);
+
+                impList[newFooterIndex] = newSize;
+                footerIndex = newFooterIndex;
+                impList[headerIndex] = newSize;
+
+            }
+
+            // Update header and footer
+            if(cAbove == false && cBelow == false){
+                impList[headerIndex]--;
+                impList[footerIndex]--;
+            }
+
+            // Update pointers
+            int index = 1;
+            int tempPrev = 0;
+            int tempNext = 0;
+
+            while(index < impSize - 1){
+                // If allocated
+                if(impList[index] % 2 != 0){
+                    index += (impList[index] - 1) / 4;
+                }
+
+                // If Free
+                if(impList[index] % 2 == 0){
+
+                }
+
+            }
+
+    } // End Explicit Free
 
 }
 
@@ -263,13 +390,17 @@ int myrealloc(int pointer, int size){
     // Explicit free list realloc
     else {
 
-        if(bestFit){
+        int newHeader = myalloc(size);
+        int j = 0;
 
+        for(int i = pointer; i < ((impList[pointer] - 1) / 4) - 1 + pointer; i++){
+            if(j != 0){
+                impList[newHeader + j] = impList[i];
+            }
+            j++;
         }
 
-        else {
-
-        }
+        myfree(pointer);
 
     }
 
@@ -322,8 +453,7 @@ int main(int argc, char* argv[]){
 
     std::string input;
 
-    impList[0] = 1;
-    impList[impSize - 1] = 1;
+
 
     // Print useage
     if(strcmp(argv[1], "-h") == 0){
@@ -371,8 +501,11 @@ int main(int argc, char* argv[]){
     std::ofstream outputFile;
     outputFile.open("output.txt");
 
+
     impList[1] = 998 * 4;
     impList[impSize - 2] = 998 * 4;
+    impList[0] = 1;
+    impList[impSize - 1] = 1;
 
     // Check to make sure file was opened
     if(inputFile == NULL){
@@ -412,12 +545,7 @@ int main(int argc, char* argv[]){
             sscanf(dup, "r, %d, %d, %d\n", &size, &block, &newBlock);
 
             // Look up block to cross refrence
-
             ptrsArr[newBlock] = myrealloc(block, size);
-
-            //ptrsArr[newBlock] = myalloc(size);
-            //myrealloc(block, size);
-            //myfree(block);
         }
 
         free(dup);
@@ -429,7 +557,10 @@ int main(int argc, char* argv[]){
     // Print data structure
     for(int i = 0; i < impSize; i++){
         outputFile << std::dec << i << ", ";
-        if(impList[i] != 0) 
+        if(impList[i] == -1){
+            outputFile << "0x" << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << static_cast<int>(0) << std::endl;
+        }
+        else if(impList[i] != 0) 
             outputFile << "0x" << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << static_cast<int>(impList[i]) << std::endl;
 
         else
