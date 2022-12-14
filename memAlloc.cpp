@@ -172,9 +172,18 @@ int myalloc(int size){
             // Only write new pointer if there isn't one there
             if(impList[i + 1] == 0)
                 impList[i + 1] = -1;
+            else if(impList[i + 1] != -1){
+                impList[impList[i + 1] + 2] = -1;
+            }
 
             if(impList[i + 2] == 0)
                 impList[i + 2] = -1;
+            else if(impList[i + 2] != -1){
+                impList[impList[i + 2] + 1] = -1;
+            }
+
+            // If pointer exists update the blocks it is pointing to
+
 
             // Write footer
             impList[i + words + 1] = 1 + (4 * (words + 2));
@@ -282,11 +291,15 @@ void myfree(int pointer){
             int footerIndex = ptrsArr[pointer] + size - 1;
             bool cAbove = false;
             bool cBelow = false;
+            bool both = false;
 
             // Check if already freed
             if(impList[headerIndex] % 2 == 0){
                 return;
             }
+
+
+
 
             // If coalesce above and below
             if(impList[headerIndex - 1] % 2 == 0 && impList[footerIndex + 1] % 2 == 0){
@@ -296,7 +309,7 @@ void myfree(int pointer){
                 int newFooterindex = footerIndex + (impList[footerIndex + 1] / 4);
 
                 impList[newHeaderIndex] = newSize;
-                impList[newFooterindex] = newSize;
+                impList[newFooterindex] = newSize;                
 
                 return;
             }
@@ -330,31 +343,55 @@ void myfree(int pointer){
                 footerIndex = newFooterIndex;
                 impList[headerIndex] = newSize;
 
+                int newNextIndex = headerIndex + 2;
+                int index = newFooterIndex + 1;
+
+                for(;;){
+                    if(index > impSize - 2)
+                        break;
+                    
+                    if(impList[index] % 2 == 0){
+                        impList[newNextIndex] = index;
+                        impList[index + 1] = headerIndex;
+                        break;
+                    }
+                    else if(impList[index] % 2 != 0){
+                        index += (impList[index] - 1) / 4;
+                    } 
+                }
+
             }
 
             // Update header and footer
             if(cAbove == false && cBelow == false){
                 impList[headerIndex]--;
                 impList[footerIndex]--;
-            }
 
-            // Update pointers
-            int index = 1;
-            int tempPrev = 0;
-            int tempNext = 0;
+                int index = headerIndex;
 
-            while(index < impSize - 1){
-                // If allocated
-                if(impList[index] % 2 != 0){
-                    index += (impList[index] - 1) / 4;
+                for(;;){
+                    if(index > impSize)
+                        break;
+
+                    if(impList[index] % 2 == 0 && index != headerIndex){
+                        impList[headerIndex + 2] = index;
+                        impList[index + 1] = headerIndex;
+                        break;
+                    }
+                    else if(impList[index] % 2 != 0){
+                        index += (impList[index] - 1) / 4;
+                    }
+                    else{
+                        index += impList[index] / 4;
+                    }
                 }
 
-                // If Free
-                if(impList[index] % 2 == 0){
+            }        
 
-                }
 
-            }
+
+
+            
 
     } // End Explicit Free
 
@@ -506,6 +543,10 @@ int main(int argc, char* argv[]){
     impList[impSize - 2] = 998 * 4;
     impList[0] = 1;
     impList[impSize - 1] = 1;
+    if(!implicit){
+        impList[2] = -1;
+        impList[3] = -1;
+    }
 
     // Check to make sure file was opened
     if(inputFile == NULL){
@@ -526,6 +567,10 @@ int main(int argc, char* argv[]){
             int size = 0;
             int pointer = 0;
             sscanf(dup, "a, %d, %d\n", &size, &pointer);
+            if(size > 4000){
+                std::cout << "total heap capacity reached! (100000 words)" << std::endl;
+                return -1;
+            }
             ptrsArr[pointer] = myalloc(size);
         }
 
