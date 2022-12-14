@@ -226,9 +226,10 @@ void myfree(int pointer){
             bool cBelow = false;
 
             // Check if already freed
+            
             if(impList[headerIndex] % 2 == 0){
                 return;
-            }
+            }   
 
             // If coalesce above and below
             if(impList[headerIndex - 1] % 2 == 0 && impList[footerIndex + 1] % 2 == 0){
@@ -271,7 +272,6 @@ void myfree(int pointer){
                 impList[newFooterIndex] = newSize;
                 footerIndex = newFooterIndex;
                 impList[headerIndex] = newSize;
-
             }
 
             // Update header and footer
@@ -298,9 +298,6 @@ void myfree(int pointer){
                 return;
             }
 
-
-
-
             // If coalesce above and below
             if(impList[headerIndex - 1] % 2 == 0 && impList[footerIndex + 1] % 2 == 0){
                 int newSize = (impList[headerIndex] - 1) + impList[headerIndex - 1] + impList[footerIndex + 1];
@@ -313,6 +310,13 @@ void myfree(int pointer){
 
                 int index = newFooterindex + 1;
 
+                impList[newHeaderIndex + 1] = impList[footerIndex + 1];
+                impList[newHeaderIndex + 2] = impList[headerIndex + 2];
+
+                std::cout << "Above Below\n";
+
+
+                /*
                 for(;;){
                     if(index > impSize - 2)
                         break;
@@ -325,6 +329,7 @@ void myfree(int pointer){
                         index += (impList[index] - 1) / 4;
                     }
                 }
+                */
 
                 return;
             }
@@ -436,6 +441,7 @@ int myrealloc(int pointer, int size){
         }
 
         myfree(pointer);
+        return newHeader;
 
     }
 
@@ -453,6 +459,7 @@ int myrealloc(int pointer, int size){
         }
 
         myfree(pointer);
+        return newHeader;
 
     }
 
