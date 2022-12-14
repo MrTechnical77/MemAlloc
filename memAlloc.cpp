@@ -53,7 +53,6 @@ int myalloc(int size){
                         }
                     }
 
-
                     j += (impList[j] / 4);
                     std::cout << "Index: " << j << std::endl;
                 }
@@ -79,11 +78,9 @@ int myalloc(int size){
             // Write new freed footer
             int freedFootIndex = freedHeadIndex + (newFreeSize / 4) - 1;
             //std::cout << "Footer: " << freedFootIndex << std::endl;
-            impList[freedFootIndex] = newFreeSize;
-            
+            impList[freedFootIndex] = newFreeSize;            
             
             return lowestIndex;
-
 
         } // End Implicit Best Fit
 
@@ -129,7 +126,6 @@ int myalloc(int size){
             impList[freedFootIndex] = newFreeSize;
             
             return i;
-
 
         } // End implicit First Fit
 
@@ -202,7 +198,6 @@ int myalloc(int size){
             impList[freedHeadIndex + 2] = -1;
             
             return lowestIndex;
-
         }
 
         // First Fit Explicit
@@ -232,6 +227,7 @@ int myalloc(int size){
             impList[i] = 1 + (4 * (words + 2));
 
             // Only write new pointer if there isn't one there
+            // If pointer exists update the blocks it is pointing to
             if(impList[i + 1] == 0)
                 impList[i + 1] = -1;
             else if(impList[i + 1] != -1){
@@ -243,9 +239,6 @@ int myalloc(int size){
             else if(impList[i + 2] != -1){
                 impList[impList[i + 2] + 1] = -1;
             }
-
-            // If pointer exists update the blocks it is pointing to
-
 
             // Write footer
             impList[i + words + 1] = 1 + (4 * (words + 2));
@@ -265,11 +258,8 @@ int myalloc(int size){
             impList[freedFootIndex] = newFreeSize;
             
             return i;
-
-        }
-
+        } // End first fit explicit
     }
-
     return pointer;
 }
 
@@ -343,7 +333,6 @@ void myfree(int pointer){
             }
             
         } // End implicit free
-
     }
 
     // Explicit free
@@ -449,15 +438,8 @@ void myfree(int pointer){
                     }
                 }
 
-            }        
-
-
-
-
-            
-
+            }  
     } // End Explicit Free
-
 }
 
 // Takes pointer to allocated block and size of new block
@@ -482,10 +464,8 @@ int myrealloc(int pointer, int size){
             }
             j++;
         }
-
         myfree(pointer);
         return newHeader;
-
     }
 
     // Explicit free list realloc
@@ -500,13 +480,9 @@ int myrealloc(int pointer, int size){
             }
             j++;
         }
-
         myfree(pointer);
         return newHeader;
-
     }
-
-
     return pointer;
 }
 
@@ -554,8 +530,6 @@ void printUseage(){
 int main(int argc, char* argv[]){
 
     std::string input;
-
-
 
     // Print useage
     if(strcmp(argv[1], "-h") == 0){
@@ -657,9 +631,7 @@ int main(int argc, char* argv[]){
             // Look up block to cross refrence
             ptrsArr[newBlock] = myrealloc(block, size);
         }
-
-        free(dup);
-        
+        free(dup);        
     }    
 
 
