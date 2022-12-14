@@ -141,6 +141,68 @@ int myalloc(int size){
         // Best Fit Explicit
         if(bestFit){
 
+            int lowest = INT_MAX;
+            int lowestIndex = 0;
+
+            // Create list of possible locions to store malloc
+            int j = 1;
+            while(j < impSize - 1){
+                if(impList[j] % 2 == 1){
+                    j += ((impList[j] - 1) / 4);
+                }
+                else if (impList[j] % 2 == 0){
+
+                    if(impList[j] < lowest){
+                        if(impList[j] >= size){
+                            lowest = impList[j];
+                            lowestIndex = j;
+                        }
+                    }
+                    j += (impList[j] / 4);
+                }
+            }
+
+            if(impList[lowestIndex + 1] == 0)
+                impList[lowestIndex + 1] = -1;
+            else if(impList[lowestIndex + 1] != -1){
+                impList[impList[lowestIndex + 1] + 2] = -1;
+            }
+
+            if(impList[lowestIndex + 2] == 0)
+                impList[lowestIndex + 2] = -1;
+            else if(impList[lowestIndex + 2] != -1){
+                impList[impList[lowestIndex + 2] + 1] = -1;
+            }
+
+            // Store old free size
+            int temp = impList[lowestIndex];
+
+            // Write header
+            impList[lowestIndex] = 1 + (4 * (words + 2));
+
+            // Write footer
+            impList[lowestIndex + words + 1] = 1 + (4 * (words + 2));
+
+            // Write new free size header
+            int freedHeadIndex = lowestIndex + words + 2;
+
+            int newFreeSize = temp - (4 * (words + 2));
+
+            impList[freedHeadIndex] = newFreeSize;
+            //std::cout << freedHeadIndex << std::endl;
+
+            // Write new freed footer
+            int freedFootIndex = freedHeadIndex + (newFreeSize / 4) - 1;
+            //std::cout << "Footer: " << freedFootIndex << std::endl;
+            impList[freedFootIndex] = newFreeSize;
+
+            
+            impList[freedHeadIndex] = newFreeSize;
+            impList[freedHeadIndex + 1] = -1;
+            impList[freedHeadIndex + 2] = -1;
+            
+            return lowestIndex;
+
         }
 
         // First Fit Explicit
@@ -309,27 +371,8 @@ void myfree(int pointer){
                 impList[newFooterindex] = newSize;         
 
                 int index = newFooterindex + 1;
-
-                impList[newHeaderIndex + 1] = impList[footerIndex + 1];
+                impList[footerIndex + 2] = -1;
                 impList[newHeaderIndex + 2] = impList[headerIndex + 2];
-
-                std::cout << "Above Below\n";
-
-
-                /*
-                for(;;){
-                    if(index > impSize - 2)
-                        break;
-
-                    if(impList[index] % 2 == 0){
-                        impList[index + 1] = newHeaderIndex;
-                        break;
-                    }
-                    else{
-                        index += (impList[index] - 1) / 4;
-                    }
-                }
-                */
 
                 return;
             }
